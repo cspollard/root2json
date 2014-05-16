@@ -2,9 +2,7 @@ import json
 from sys import argv, stdout
 from root_numpy import root2array
 import numpy as np
-
-def npdumps(obj):
-    return json.dumps(obj, cls=NPJSONEncoder)
+import gzip
 
 class NPJSONEncoder (json.JSONEncoder):
     def default(self, obj):
@@ -13,16 +11,25 @@ class NPJSONEncoder (json.JSONEncoder):
         else:
             return np.asscalar(obj)
 
-filename = argv[1]
+if len(argv) < 2:
+    print "usage:", argv[0], "infilename [treename] outfilname"
+    exit(-1)
 
-if len(argv) > 2:
+infilename = argv[1]
+
+if len(argv) > 3:
     treename = argv[2]
 else:
     treename = None
 
-arr = root2array(filename, treename)
+outfilename = argv[-1]
+
+arr = root2array(infilename, treename=treename)
 
 names = list(arr.dtype.names)
 
-output = [names, arr.tolist()]
-print json.dumps(output, cls=NPJSONEncoder)
+output = {"branches" : names, "events" : arr}
+
+fout = gzip.open(outfilename, 'wb')
+fout.write(json.dumps(output, cls=NPJSONEncoder))
+fout.close()
