@@ -26,9 +26,12 @@ outfilename = argv[-1]
 
 arr = root2array(infilename, treename=treename)
 
-names = list(arr.dtype.names)
+names = arr.dtype.names
+fields = arr.dtype.fields
 
-output = {"branches" : names, "events" : arr}
+nametypes = [[name, fields[name][0].str] for name in names]
+
+output = {"branches" : nametypes, "events" : arr}
 
 fout = gzip.open(outfilename, 'wb')
 fout.write(json.dumps(output, cls=NPJSONEncoder))
