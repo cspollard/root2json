@@ -11,7 +11,7 @@ class NPJSONEncoder (json.JSONEncoder):
         else:
             return np.asscalar(obj)
 
-if len(argv) < 2:
+if len(argv) < 3:
     print "usage:", argv[0], "infilename [treename] outfilname"
     exit(-1)
 
@@ -31,8 +31,10 @@ fields = arr.dtype.fields
 
 nametypes = [[name, fields[name][0].str] for name in names]
 
-output = {"branches" : nametypes, "events" : arr}
-
 fout = gzip.open(outfilename, 'wb')
-fout.write(json.dumps(output, cls=NPJSONEncoder))
+fout.write(json.dumps(nametypes, cls=NPJSONEncoder))
+fout.write('\n')
+for evt in arr:
+    fout.write(json.dumps(evt, cls=NPJSONEncoder))
+    fout.write('\n')
 fout.close()
