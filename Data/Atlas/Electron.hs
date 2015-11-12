@@ -14,3 +14,5 @@ data Electron = Electron {
     eLooseTrackOnlyIso :: Bool
     } deriving Show
     -}
+
+newtype Electrons = Electrons [Electron]
