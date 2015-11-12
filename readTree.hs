@@ -12,9 +12,9 @@ import Control.Applicative
 main :: IO ()
 main = do
     bs <- BS.readFile =<< head <$> getArgs
-    let tree = parseEither parserTree `fmap` A.decode bs
+    let tree = parseEither A.parseJSON `fmap` A.decode bs :: Maybe (Either String TopTree)
 
     case tree of
         Just (Left err) -> print err
-        Just (Right t) -> print . map (parseEither A.parseJSON :: A.Value -> Either String Event) $ t
+        Just (Right (TopTree t)) -> print . map (parseEither A.parseJSON :: A.Value -> Either String Event) $ t
         Nothing -> print "FAIL"

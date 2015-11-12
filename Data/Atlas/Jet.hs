@@ -1,8 +1,9 @@
 module Data.Atlas.Jet where
 
+import Data.Atlas.PtEtaPhiE
+
 data Jet = Jet {
-    jPt :: Double,
-    jEta :: Double
+    jPtEtaPhiE :: PtEtaPhiE
     } deriving Show
 
-newtype Jets = Jets [Jet]
+newtype Jets = Jets [Jet] deriving Show

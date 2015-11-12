@@ -12,9 +12,13 @@ import Data.Aeson.Types (Parser)
 import qualified Data.HashMap.Strict as HM (fromList, HashMap)
 import Data.Vector (Vector(..), (!))
 
+import Data.Monoid ((<>))
+
 import Data.Atlas.Event
 import Data.Atlas.Electron
+import Data.Atlas.Muon
 import Data.Atlas.Jet
+import Data.Atlas.PtEtaPhiE
 
 newtype TopTree = TopTree [Value]
 
@@ -29,20 +33,22 @@ instance FromJSON TopTree where
 zipWithX :: Monad m => m [a -> b] -> m [a] -> m [b]
 zipWithX = liftM2 $ zipWith ($)
 
+ptEtaPhiEs :: Text -> Value -> Parser [PtEtaPhiE]
+ptEtaPhiEs prefix = withObject "ptEtaPhiE parsing expects an object" $
+                    \obj -> return (repeat PtEtaPhiE) `zipWithX`
+                        (obj .: (prefix <> "pt")) `zipWithX`
+                        (obj .: (prefix <> "eta")) `zipWithX`
+                        (obj .: (prefix <> "phi")) `zipWithX`
+                        (obj .: (prefix <> "e"))
+
 instance FromJSON Electrons where
-    parseJSON v = Electrons <$> electrons v
+    parseJSON v = Electrons <$> (return (repeat Electron) `zipWithX` ptEtaPhiEs "el_" v)
 
-electrons :: Value -> Parser [Electron]
-electrons = withObject "electron parsing expects an object" $
-                    \obj -> return (repeat Electron) `zipWithX` (obj .: "el_pt") `zipWithX` (obj .: "el_eta")
-
+instance FromJSON Muons where
+    parseJSON v = Muons <$> (return (repeat Muon) `zipWithX` ptEtaPhiEs "mu_" v)
 
 instance FromJSON Jets where
-    parseJSON v = Jets <$> jets v
-
-jets :: Value -> Parser [Jet]
-jets = withObject "jet parsing expects an object" $
-                    \obj -> return (repeat Jet) `zipWithX` (obj .: "jet_pt") `zipWithX` (obj .: "jet_eta")
+    parseJSON v = Jets <$> (return (repeat Jet) `zipWithX` ptEtaPhiEs "jet_" v)
 
 instance FromJSON Event where
-    parseJSON v = Event <$> parseJSON v <*> parseJSON v
+    parseJSON v = Event <$> parseJSON v <*> parseJSON v <*> parseJSON v

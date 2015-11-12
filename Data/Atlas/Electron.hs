@@ -1,18 +1,16 @@
 module Data.Atlas.Electron where
 
+import Data.Atlas.PtEtaPhiE
+
 data Electron = Electron {
-    ePt :: Double,
-    eEta :: Double
+    eFourMom :: PtEtaPhiE
     } deriving Show
-{- 
-    ePhi :: Double,
-    eE :: Double,
+    {- 
     eTightLH :: Bool,
     eMediumLH :: Bool,
     eLooseLH :: Bool,
     eTightIso :: Bool,
     eLooseTrackOnlyIso :: Bool
-    } deriving Show
     -}
 
-newtype Electrons = Electrons [Electron]
+newtype Electrons = Electrons [Electron] deriving Show
