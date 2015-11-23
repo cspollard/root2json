@@ -7,6 +7,7 @@ from string import count
 drootconv = {
         "Int_t" : "int",
         "UInt_t" : "unsigned int",
+        "ULong64_t" : "unsigned long",
         "Char_t" : "char",
         "Float_t" : "float",
         "Double_t" : "double",
@@ -16,6 +17,7 @@ drootconv = {
 darrconv = {
         "int": 'i',
         "unsigned int": 'I',
+        "unsigned long": 'L',
         "char": 'c',
         "float": 'f',
         "double": 'd',
@@ -71,8 +73,7 @@ def vector2string(n=1):
 
 
 def get_type_obj(classname):
-    for k in ["UInt_t", "Int_t", "Char_t", "Float_t", "Double_t",
-            "Bool_t"]:
+    for k in reversed(sorted(drootconv.keys())):
         if k in classname:
             classname = classname.replace(k, drootconv[k])
 
