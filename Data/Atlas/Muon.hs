@@ -1,6 +1,7 @@
 module Data.Atlas.Muon where
 
 import Data.Atlas.PtEtaPhiE
+import Data.Vector
 
 data Muon = Muon {
     mFourMom :: PtEtaPhiE
@@ -13,4 +14,4 @@ data Muon = Muon {
     mLooseTrackOnlyIso :: Bool
     -}
 
-newtype Muons = Muons [Muon] deriving Show
+newtype Muons = Muons (Vector Muon) deriving Show
