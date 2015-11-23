@@ -10,4 +10,4 @@ data Muon = Muon {
     mPtVarCone30 :: Double
     } deriving Show
 
-newtype Muons = Muons (Vector Muon) deriving Show
+type Muons = Vector Muon

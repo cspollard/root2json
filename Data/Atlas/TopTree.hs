@@ -3,14 +3,13 @@
 module Data.Atlas.TopTree where
 
 import Control.Applicative
-import Control.Monad (liftM2)
 
 import Data.Text (Text, unpack)
-import Data.Aeson (Value(..), Object, object, withObject)
+import Data.Aeson (Value(..), object, withObject)
 import Data.Aeson ((.:), FromJSON(..))
 import Data.Aeson.Types (Parser)
-import qualified Data.HashMap.Strict as HM (fromList, HashMap)
-import Data.Vector (Vector(..), (!), generateM)
+-- import qualified Data.HashMap.Strict as HM (fromList, HashMap)
+import Data.Vector (Vector, (!), generateM)
 import qualified Data.Vector as V
 
 import Data.Monoid ((<>))
@@ -97,6 +96,7 @@ parseTreeVector prefix f = withObject "parseVector expects an object." $
                         generateM n (flip f (Object obj))
 
 
+{-
 instance FromJSON Electrons where
     parseJSON v = Electrons <$> parseTreeVector "el_" parseElectron v
 
@@ -109,6 +109,8 @@ instance FromJSON Jets where
 instance FromJSON LargeJets where
     parseJSON v = LargeJets <$>
                     parseTreeVector "ljet_" parseLargeJet v
+-}
+
 
 instance FromJSON Event where
     parseJSON v = Event <$>
@@ -117,8 +119,14 @@ instance FromJSON Event where
                     parseBranch "mcChannelNumber" v <*>
                     parseBranch "weight_mc" v <*>
                     parseBranch "mu" v <*>
+                    {-
                     parseJSON v <*>
                     parseJSON v <*>
                     parseJSON v <*>
                     parseJSON v <*>
+                    -}
+                    parseTreeVector "el_" parseElectron v <*>
+                    parseTreeVector "mu_" parseMuon v <*>
+                    parseTreeVector "jet_" parseJet v <*>
+                    parseTreeVector "ljet_" parseLargeJet v <*>
                     parseMET v

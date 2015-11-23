@@ -11,5 +11,4 @@ data Electron = Electron {
     ePtVarCone20 :: Double
     } deriving Show
 
-newtype Electrons = Electrons (Vector Electron)
-    deriving Show
+type Electrons = Vector Electron

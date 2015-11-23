@@ -9,7 +9,7 @@ data Jet = Jet {
     jJVT :: Double
     } deriving Show
 
-newtype Jets = Jets (Vector Jet) deriving Show
+type Jets = Vector Jet
 
 data LargeJet = LargeJet {
     ljPtEtaPhiE :: PtEtaPhiE,
@@ -17,11 +17,11 @@ data LargeJet = LargeJet {
     ljSD12 :: Double
     } deriving Show
 
-newtype LargeJets = LargeJets (Vector LargeJet) deriving Show
+type LargeJets = Vector LargeJet
 
 data TrackJet = TrackJet {
     tjPtEtaPhiE :: PtEtaPhiE,
     tjMV2c20 :: Double
     } deriving Show
 
-newtype TrackJets = TrackJets (Vector TrackJet) deriving Show
+type TrackJets = Vector TrackJet
