@@ -18,11 +18,11 @@ import Data.Either (rights)
 main :: IO ()
 main = do
     bs <- BS.readFile =<< head <$> getArgs
-    let tree = parseEither A.parseJSON `fmap` A.decode bs :: Maybe (Either String TopTree)
+    let tree = parseEither A.parseJSON `fmap` A.decode bs :: Maybe (Either String [Event])
 
     case tree of
         Just (Left err) -> print err
-        Just (Right (TopTree t)) -> writeEvents . rights . map (parseEither A.parseJSON) $ t
+        Just (Right events) -> writeEvents events
         Nothing -> print "FAIL"
 
 
