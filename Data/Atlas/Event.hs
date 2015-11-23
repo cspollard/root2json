@@ -1,5 +1,6 @@
 module Data.Atlas.Event where
 
+import Data.Atlas.PtEtaPhiE
 import Data.Atlas.Electron
 import Data.Atlas.Muon
 import Data.Atlas.Jet
@@ -13,5 +14,6 @@ data Event = Event {
     eElectrons :: Electrons,
     eMuons :: Muons,
     eJets :: Jets,
-    eLargeJets :: LargeJets
+    eLargeJets :: LargeJets,
+    eMET :: PtEtaPhiE
     } deriving Show

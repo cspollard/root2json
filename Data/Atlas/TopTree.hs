@@ -37,8 +37,10 @@ parseBranch name = withObject
                         ("parseBranch: the item with key " <> unpack name <> " is not an object.")
                         (.: name)
 
+
 parseIdx :: FromJSON a => Text -> Int -> Value -> Parser a
 parseIdx name idx val = (! idx) `fmap` parseBranch name val
+
 
 parsePtEtaPhiE :: Text -> Int -> Value -> Parser PtEtaPhiE
 parsePtEtaPhiE prefix idx val = PtEtaPhiE <$>
@@ -74,9 +76,18 @@ parseJet idx val = Jet <$>
 
 parseLargeJet :: Int -> Value -> Parser LargeJet
 parseLargeJet idx val = LargeJet <$>
-                    parsePtEtaPhiE "ljet_" idx val <*>
-                    parseIdx "ljet_m" idx val <*>
-                    parseIdx "ljet_sd12" idx val
+                            parsePtEtaPhiE "ljet_" idx val <*>
+                            parseIdx "ljet_m" idx val <*>
+                            parseIdx "ljet_sd12" idx val
+
+
+parseMET :: Value -> Parser PtEtaPhiE
+parseMET val = let et = parseBranch "met_met" val in
+                PtEtaPhiE <$>
+                    et <*>
+                    return 0.0 <*>
+                    parseBranch "met_phi" val <*>
+                    et
 
 
 parseTreeVector :: Text -> (Int -> Value -> Parser a) -> Value -> Parser (Vector a)
@@ -109,4 +120,5 @@ instance FromJSON Event where
                     parseJSON v <*>
                     parseJSON v <*>
                     parseJSON v <*>
-                    parseJSON v
+                    parseJSON v <*>
+                    parseMET v
