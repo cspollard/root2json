@@ -4,7 +4,7 @@ import Data.Atlas.PtEtaPhiE
 import Data.Vector
 
 data Muon = Muon {
-    mFourMom :: PtEtaPhiE,
+    mPtEtaPhiE :: PtEtaPhiE,
     mCharge :: Double,
     mD0Sig :: Double,
     mPtVarCone30 :: Double

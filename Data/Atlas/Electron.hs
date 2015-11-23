@@ -4,7 +4,7 @@ import Data.Atlas.PtEtaPhiE
 import Data.Vector (Vector)
 
 data Electron = Electron {
-    eFourMom :: PtEtaPhiE,
+    ePtEtaPhiE :: PtEtaPhiE,
     eClEta :: Double,
     eCharge :: Double,
     eD0Sig :: Double,
