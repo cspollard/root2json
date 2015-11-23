@@ -4,14 +4,10 @@ import Data.Atlas.PtEtaPhiE
 import Data.Vector
 
 data Muon = Muon {
-    mFourMom :: PtEtaPhiE
+    mFourMom :: PtEtaPhiE,
+    mCharge :: Double,
+    mD0Sig :: Double,
+    mPtVarCone30 :: Double
     } deriving Show
-    {-
-    mTightLH :: Bool,
-    mMediumLH :: Bool,
-    mLooseLH :: Bool,
-    mTightIso :: Bool,
-    mLooseTrackOnlyIso :: Bool
-    -}
 
 newtype Muons = Muons (Vector Muon) deriving Show

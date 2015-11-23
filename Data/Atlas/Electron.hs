@@ -4,17 +4,12 @@ import Data.Atlas.PtEtaPhiE
 import Data.Vector (Vector)
 
 data Electron = Electron {
-    eFourMom :: PtEtaPhiE
+    eFourMom :: PtEtaPhiE,
+    eClEta :: Double,
+    eCharge :: Double,
+    eD0Sig :: Double,
+    ePtVarCone20 :: Double
     } deriving Show
-
-    {-
-    eTightLH :: Bool,
-    eMediumLH :: Bool,
-    eLooseLH :: Bool,
-    eTightIso :: Bool,
-    eLooseTrackOnlyIso :: Bool
-    } deriving Show
-    -}
 
 newtype Electrons = Electrons (Vector Electron)
     deriving Show
