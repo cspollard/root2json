@@ -29,18 +29,21 @@ def showBranch(bval, printer):
     return printer(bval)
 
 
-def showEvt(branches):
+def showEvt(branches, stream):
     if not len(branches):
         return "[]"
 
-    s = "{"
-    s += "\"%s\" : %s" % (branches[0][0], branches[0][2](branches[0][1]))
-    for (bname, bval, bprinter) in branches[1:]:
-        s += ","
-        s += "\"%s\" : %s" % (bname, bprinter(bval))
+    stream.write(
+            "{\"%s\" : %s" % (branches[0][0], branches[0][2](branches[0][1]))
+            )
 
-    s += "}"
-    return s
+    for (bname, bval, bprinter) in branches[1:]:
+        stream.write(
+                ", \"%s\" : %s" % (bname, bprinter(bval))
+                )
+
+    stream.write("}")
+    return
 
 
 def vector2string(n=1):
@@ -83,9 +86,9 @@ def get_type_obj(classname):
         return array(darrconv[classname], [0])
 
 
-def JSONDump(tree, branches_on=None):
+def JSONDump(tree, branches_on=None, stream=stdout):
 
-    stdout.write('{\n\t"branches" : [\n')
+    stream.write('{\n\t"branches" : [\n')
 
     lleaves = []
     if branches_on is None:
@@ -104,7 +107,7 @@ def JSONDump(tree, branches_on=None):
         lname = l.GetName()
         lclass = l.GetTypeName()
 
-        stdout.write('\t\t["%s", "%s"],\n' % (lname, lclass))
+        stream.write('\t\t["%s", "%s"],\n' % (lname, lclass))
 
         type_obj = get_type_obj(lclass)
         printer_obj = vector2string(count(lclass, "vector"))
@@ -116,7 +119,7 @@ def JSONDump(tree, branches_on=None):
     lname = l.GetName()
     lclass = l.GetTypeName()
 
-    stdout.write('\t\t["%s", "%s"]\n\t],\n' % (lname, lclass))
+    stream.write('\t\t["%s", "%s"]\n\t],\n' % (lname, lclass))
 
     type_obj = get_type_obj(lclass)
     printer_obj = vector2string(count(lclass, "vector"))
@@ -126,21 +129,21 @@ def JSONDump(tree, branches_on=None):
 
 
     nentries = tree.GetEntries()
-    stdout.write('\t"events" : [\n')
+    stream.write('\t"events" : [\n')
 
     if not nentries:
-        stdout.write('\t]}')
+        stream.write('\t]}')
         return
 
     tree.GetEntry(0)
-    stdout.write(showEvt(lbranches))
+    showEvt(lbranches, stream)
 
     for entry in xrange(1, nentries):
         tree.GetEntry(entry)
-        stdout.write(",\n")
-        stdout.write(showEvt(lbranches))
+        stream.write(",\n")
+        showEvt(lbranches, stream)
 
-    stdout.write("\n]\n}")
+    stream.write("\n]\n}")
 
     return
 

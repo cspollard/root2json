@@ -23,7 +23,7 @@ printJust (Just x) = putStr $ show x ++ " "
 
 writeEvents :: [Event] -> IO ()
 writeEvents evts = do
-                    forM_ (take 10000 evts) $ \evt -> do
+                    forM_ evts $ \evt -> do
                             printJust . fmap lvPt . fmap jPtEtaPhiE . (!? 0) . eJets $ evt
                             printJust . fmap lvEta . fmap jPtEtaPhiE . (!? 0) . eJets $ evt
                             printJust . fmap lvPhi . fmap jPtEtaPhiE . (!? 0) . eJets $ evt
