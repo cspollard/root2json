@@ -83,14 +83,21 @@ def get_type_obj(classname):
         return array(darrconv[classname], [0])
 
 
-def JSONDump(tree):
+def JSONDump(tree, branches_on=None):
 
     stdout.write('{\n\t"branches" : [\n')
 
     lleaves = []
-    for b in tree.GetListOfBranches():
-        for l in b.GetListOfLeaves():
-            lleaves.append(l)
+    if branches_on is None:
+        for b in tree.GetListOfBranches():
+            for l in b.GetListOfLeaves():
+                lleaves.append(l)
+    else:
+        for bname in branches_on:
+            lleaves.append(tree.GetLeaf(bname))
+
+    tree.SetBranchStatus("*", 0)
+    map(lambda l: tree.SetBranchStatus(l.GetName(), 1), lleaves)
 
     lbranches = []
     for l in lleaves[:-1]:
