@@ -3,24 +3,20 @@
 module Data.Atlas.TopTree where
 
 import Control.Applicative
-import Data.Maybe (catMaybes)
-
-import Data.Word (Word8)
 
 import Data.Text (Text, unpack)
-import Data.Aeson (Value(..), object, withObject, decode)
+import Data.Aeson (Value(..), withObject, eitherDecode)
 import Data.Aeson ((.:), FromJSON(..))
-import Data.Aeson.Types (Parser, parseMaybe)
+import Data.Aeson.Types (Parser)
 import Data.Vector (Vector, (!), generateM)
 import qualified Data.Vector as V
 
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
-import Data.Attoparsec.Lazy (scan)
-import qualified Data.Attoparsec.ByteString.Char8 as AC (scan)
-import qualified Data.Attoparsec.Lazy as AL (Parser)
-import Data.Attoparsec.ByteString.Char8 (skipSpace, char, string)
+import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.Attoparsec.ByteString.Char8 as AC
+import qualified Data.Attoparsec.Lazy as AL
+
+import Data.Attoparsec.ByteString.Char8 (skipSpace, char, string, manyTill, anyChar)
 
 import Data.Monoid ((<>))
 
@@ -32,32 +28,41 @@ import Data.Atlas.PtEtaPhiE
 
 
 bracketScan :: Char -> Char -> AL.Parser BSL.ByteString
-bracketScan p q = fmap BSL.fromStrict $
-                            AC.scan 0 $ \n c -> if c == p
-                                                then Just (n+1)
-                                                else if c == q
-                                                    then if n == 1
-                                                        then Nothing
-                                                        else Just (n-1)
-                                                    else Just n
+bracketScan p q = fmap BSL.fromStrict $ BS.snoc <$> scanner <*> char q
+    where
+        scanner = AC.scan 0 $ \n c -> if c == p
+                            then Just (n+1)
+                            else if c == q
+                                then if n == 1
+                                    then Nothing
+                                    else Just (n-1)
+                                else Just n
 
 
-parseTree :: AL.Parser [Event]
-parseTree = do
-                skipSpace
-                char '{'
-                skipSpace
-                string "\"branches\"" *> skipSpace *> char ':' *> skipSpace
-                branchesDict <- bracketScan '{' '}'
+-- return event and whether it is the last one
+event :: AL.Parser (Event, Bool)
+event = do
+            skipSpace
+            evtTxt <- bracketScan '{' '}'
+            case eitherDecode evtTxt of
+                Left err -> fail err
+                Right evt -> ((,) evt . (/= ',')) <$> (skipSpace *> anyChar )
 
-                case fmap head $ decode branchesDict of
-                    Nothing -> fail "failed to compile list of branches."
-                    Just branchNames -> do
-                                            skipSpace *> char ',' *> skipSpace *> "\"events\"" *> skipSpace *> char ':' *> skipSpace
-                                            eventsText <- many (skipSpace *> bracketScan '{' '}' <* skipSpace <* char ',')
-                                            let eventsValues = catMaybes $ map decode eventsText :: [[Value]]
-                                            let eventsWithBranches = map (zip branchNames) eventsValues :: [[(Text, Value)]]
-                                            return (catMaybes . map (parseMaybe parseJSON . object) $ eventsWithBranches :: [Event])
+parseEvents :: BSL.ByteString -> [Event]
+parseEvents bs = case AL.parse event bs of
+                    AL.Fail _ _ err -> error err
+                    AL.Done bs' (evt, False) -> evt : parseEvents bs'
+                    AL.Done _ (evt, True) -> [evt]
+
+
+
+parseTree :: BSL.ByteString -> [Event]
+parseTree bs = case AL.parse headerParse bs of
+                AL.Fail _ _ err -> error err
+                AL.Done bs' _ -> parseEvents bs'
+        where
+            headerParse = manyTill anyChar (string "\"events\"") <* skipSpace <* char ':' <* skipSpace <* char '['
+
 
 
 parseBranch :: FromJSON a => Text -> Value -> Parser a

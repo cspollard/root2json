@@ -33,13 +33,13 @@ def showEvt(branches):
     if not len(branches):
         return "[]"
 
-    s = "["
-    s += branches[0][1](branches[0][0])
-    for (bval, printer) in branches[1:]:
+    s = "{"
+    s += "\"%s\" : %s" % (branches[0][0], branches[0][2](branches[0][1]))
+    for (bname, bval, bprinter) in branches[1:]:
         s += ","
-        s += printer(bval)
+        s += "\"%s\" : %s" % (bname, bprinter(bval))
 
-    s += "]"
+    s += "}"
     return s
 
 
@@ -101,7 +101,7 @@ def JSONDump(tree):
 
         type_obj = get_type_obj(lclass)
         printer_obj = vector2string(count(lclass, "vector"))
-        lbranches.append((type_obj, printer_obj))
+        lbranches.append((lname, type_obj, printer_obj))
 
         tree.SetBranchAddress(lname, type_obj)
 
@@ -113,7 +113,7 @@ def JSONDump(tree):
 
     type_obj = get_type_obj(lclass)
     printer_obj = vector2string(count(lclass, "vector"))
-    lbranches.append((type_obj, printer_obj))
+    lbranches.append((lname, type_obj, printer_obj))
 
     tree.SetBranchAddress(lname, type_obj)
 
