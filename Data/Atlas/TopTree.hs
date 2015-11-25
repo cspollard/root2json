@@ -13,10 +13,9 @@ import qualified Data.Vector as V
 
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.ByteString.Char8 as BS
-import qualified Data.Attoparsec.ByteString.Char8 as AC
 import qualified Data.Attoparsec.Lazy as AL
 
-import Data.Attoparsec.ByteString.Char8 (skipSpace, char, string, manyTill, anyChar)
+import Data.Attoparsec.ByteString.Char8 (skipSpace, char, string, manyTill, takeWhile1, anyChar)
 
 import Data.Monoid ((<>))
 
@@ -27,26 +26,24 @@ import Data.Atlas.Jet
 import Data.Atlas.PtEtaPhiE
 
 
-bracketScan :: Char -> Char -> AL.Parser BSL.ByteString
-bracketScan p q = fmap BSL.fromStrict $ BS.snoc <$> scanner <*> char q
-    where
-        scanner = AC.scan 0 $ \n c -> if c == p
-                            then Just (n+1)
-                            else if c == q
-                                then if n == 1
-                                    then Nothing
-                                    else Just (n-1)
-                                else Just n
+bracketScan :: Char -> Char -> AL.Parser BS.ByteString
+bracketScan p q = do
+                    _ <- char p
+                    mid <- fmap BS.concat . many $ bracketScan p q <|> takeWhile1 isNotBracket
+                    _ <- char q
+                    return $ (p `BS.cons` mid) `BS.snoc` q
+            where isNotBracket c = c /= p && c /= q
 
 
 -- return event and whether it is the last one
 event :: AL.Parser (Event, Bool)
 event = do
             skipSpace
-            evtTxt <- bracketScan '{' '}'
+            evtTxt <- BSL.fromStrict <$> bracketScan '{' '}'
             case eitherDecode evtTxt of
                 Left err -> fail err
                 Right evt -> ((,) evt . (/= ',')) <$> (skipSpace *> anyChar )
+
 
 parseEvents :: BSL.ByteString -> [Event]
 parseEvents bs = case AL.parse event bs of
