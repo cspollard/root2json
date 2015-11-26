@@ -18,6 +18,7 @@ class LorentzVector a where
     lvPhi :: a -> Double
     lvE :: a -> Double
 
+
 instance LorentzVector PtEtaPhiE where
     lvPt (PtEtaPhiE pt _ _ _) = pt
     lvEta (PtEtaPhiE _ eta _ _) = eta

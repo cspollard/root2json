@@ -2,6 +2,9 @@
 
 module Data.Atlas.TopTree where
 
+import Data.List (sortBy)
+import Data.Ord (comparing)
+
 import Control.Applicative
 
 import Data.Text (Text, unpack)
@@ -120,6 +123,9 @@ parseMET val = let et = parseBranch "met_met" val in
                     et
 
 
+ptSort :: LorentzVector v => [v] -> [v]
+ptSort = sortBy (comparing lvPt)
+
 
 instance FromJSON Event where
     parseJSON v = Event <$>
@@ -128,8 +134,8 @@ instance FromJSON Event where
                     parseBranch "mcChannelNumber" v <*>
                     parseBranch "weight_mc" v <*>
                     parseBranch "mu" v <*>
-                    parseElectrons v <*>
-                    parseMuons v <*>
-                    parseJets v <*>
-                    parseLargeJets v <*>
+                    fmap ptSort (parseElectrons v) <*>
+                    fmap ptSort (parseMuons v) <*>
+                    fmap ptSort (parseJets v) <*>
+                    fmap ptSort (parseLargeJets v) <*>
                     parseMET v

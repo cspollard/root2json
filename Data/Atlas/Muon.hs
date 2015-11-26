@@ -16,4 +16,10 @@ data Muon = Muon {
 
 instance Binary Muon
 
+instance LorentzVector Muon where
+    lvPt = lvPt . mPtEtaPhiE
+    lvEta = lvEta . mPtEtaPhiE
+    lvPhi = lvPhi . mPtEtaPhiE
+    lvE = lvE . mPtEtaPhiE
+
 type Muons = [Muon]

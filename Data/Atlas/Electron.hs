@@ -17,4 +17,10 @@ data Electron = Electron {
 
 instance Binary Electron
 
+instance LorentzVector Electron where
+    lvPt = lvPt . ePtEtaPhiE
+    lvEta = lvEta . ePtEtaPhiE
+    lvPhi = lvPhi . ePtEtaPhiE
+    lvE = lvE . ePtEtaPhiE
+
 type Electrons = [Electron]
