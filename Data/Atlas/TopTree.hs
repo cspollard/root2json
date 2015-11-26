@@ -3,7 +3,6 @@
 module Data.Atlas.TopTree where
 
 import Control.Applicative
-import qualified Data.Traversable as T (mapM)
 
 import Data.Text (Text, unpack)
 import Data.Aeson (Value(..), withObject, eitherDecode)
@@ -69,19 +68,10 @@ parseBranch name = withObject
                         (.: name)
 
 
-parseIdx :: FromJSON a => Text -> Int -> Value -> Parser a
-parseIdx name idx val = (! idx) `fmap` parseBranch name val
-
 
 zipWithA :: (Applicative m) => m (Vector (a -> b)) -> m (Vector a) -> m (Vector b)
 zipWithA = liftA2 (V.zipWith ($))
 
-parsePtEtaPhiE :: Text -> Int -> Value -> Parser PtEtaPhiE
-parsePtEtaPhiE prefix idx val = PtEtaPhiE <$>
-                                    parseIdx (prefix <> "pt") idx val <*>
-                                    parseIdx (prefix <> "eta") idx val <*>
-                                    parseIdx (prefix <> "phi") idx val <*>
-                                    parseIdx (prefix <> "e") idx val
 
 parsePtEtaPhiEs :: Text -> Value -> Parser PtEtaPhiEs
 parsePtEtaPhiEs prefix val = fmap PtEtaPhiE `fmap`
