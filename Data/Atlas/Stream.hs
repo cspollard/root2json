@@ -5,7 +5,7 @@ module Data.Atlas.Stream where
 
 import Data.Binary
 
-newtype StreamList a = Stream { unstream :: [a] }
+newtype Stream a = Stream { unstream :: [a] }
 
 instance Binary a => Binary (Stream a) where
 
