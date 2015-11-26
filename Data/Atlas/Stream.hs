@@ -34,34 +34,3 @@ decodeList bs = case runGetIncremental decodeElem `pushChunks` bs of
                     Done _ _ Nothing -> []
                     Done bs' _ (Just x) -> x : decodeList (BSL.fromStrict bs')
                     _ -> error "incomplete inputs."
-
-
-data Stream a = Stream { unstream :: [a] }
-
-
-instance Binary a => Binary (Stream a) where
-
-    put (Stream []) = putWord8 0
-    put (Stream (x:xs)) = putWord8 1 >> put x >> put (Stream xs)
-
-    get = do
-        t <- getWord8
-        case t of
-            0 -> return (Stream [])
-            1 -> do
-                   x <- get
-                   Stream xs <- get
-                   return $ Stream (x:xs)
-
-
-runGets :: Get a -> BSL.ByteString -> Stream a
-runGets g = Stream . unfoldr (decode' d) . BSL.toChunks
-    where d = runGetIncremental g
-
-decode' :: Decoder a -> [BS.ByteString] -> Maybe (a, [BS.ByteString])
-decode' _ [] = Nothing
-decode' d (bs:bss) = case d `pushChunk` bs of
-                     Fail _ _ str  -> error str
-                     Done x' _ a   -> Just (a, x':bss)
-                     k@(Partial _) -> decode' k bss
-
