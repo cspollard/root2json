@@ -28,6 +28,10 @@ decodeElem =  do
                     1 -> fmap Just get
 
 
+-- TODO
+-- this is probably suboptimal: converting between lazy and strict
+-- bytestrings over and over
+-- look for a solution using pushCheck instead of pushChecks...
 decodeList :: Binary a => BSL.ByteString -> [a]
 decodeList bs = case runGetIncremental decodeElem `pushChunks` bs of
                     Fail _ _ err -> error err
