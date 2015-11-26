@@ -1,7 +1,11 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Data.Atlas.Electron where
 
 import Data.Atlas.PtEtaPhiE
-import Data.Vector (Vector)
+ 
+import Data.Binary
+import GHC.Generics (Generic)
 
 data Electron = Electron {
     ePtEtaPhiE :: PtEtaPhiE,
@@ -9,6 +13,8 @@ data Electron = Electron {
     eCharge :: Double,
     eD0Sig :: Double,
     ePtVarCone20 :: Double
-    } deriving Show
+    } deriving (Show, Generic)
 
-type Electrons = Vector Electron
+instance Binary Electron
+
+type Electrons = [Electron]

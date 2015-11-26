@@ -8,8 +8,6 @@ import Data.Text (Text, unpack)
 import Data.Aeson (Value(..), withObject, eitherDecode)
 import Data.Aeson ((.:), FromJSON(..))
 import Data.Aeson.Types (Parser)
-import Data.Vector (Vector, (!), generateM)
-import qualified Data.Vector as V
 
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.ByteString.Char8 as BS
@@ -45,7 +43,7 @@ event = do
                 Right evt -> ((,) evt . (/= ',')) <$> (skipSpace *> anyChar )
 
 
-parseEvents :: BSL.ByteString -> [Event]
+parseEvents :: BSL.ByteString -> Events
 parseEvents bs = case AL.parse event bs of
                     AL.Fail _ _ err -> error err
                     AL.Done bs' (evt, False) -> evt : parseEvents bs'
@@ -53,7 +51,7 @@ parseEvents bs = case AL.parse event bs of
 
 
 
-parseTree :: BSL.ByteString -> [Event]
+parseTree :: BSL.ByteString -> Events
 parseTree bs = case AL.parse headerParse bs of
                 AL.Fail _ _ err -> error err
                 AL.Done bs' _ -> parseEvents bs'
@@ -69,8 +67,8 @@ parseBranch name = withObject
 
 
 
-zipWithA :: (Applicative m) => m (Vector (a -> b)) -> m (Vector a) -> m (Vector b)
-zipWithA = liftA2 (V.zipWith ($))
+zipWithA :: (Applicative m) => m ([(a -> b)]) -> m ([a]) -> m ([b])
+zipWithA = liftA2 (zipWith ($))
 
 
 parsePtEtaPhiEs :: Text -> Value -> Parser PtEtaPhiEs

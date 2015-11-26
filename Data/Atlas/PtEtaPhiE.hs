@@ -1,11 +1,16 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Data.Atlas.PtEtaPhiE where
 
-import Data.Vector
+import Data.Binary
+import GHC.Generics (Generic)
 
 data PtEtaPhiE = PtEtaPhiE Double Double Double Double
-    deriving Show
+    deriving (Show, Generic)
 
-type PtEtaPhiEs = Vector PtEtaPhiE
+instance Binary PtEtaPhiE
+
+type PtEtaPhiEs = [PtEtaPhiE]
 
 class LorentzVector a where
     lvPt :: a -> Double

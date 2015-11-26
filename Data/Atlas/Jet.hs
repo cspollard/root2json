@@ -1,27 +1,37 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Data.Atlas.Jet where
 
 import Data.Atlas.PtEtaPhiE
-import Data.Vector
+
+import Data.Binary
+import GHC.Generics (Generic)
 
 data Jet = Jet {
     jPtEtaPhiE :: PtEtaPhiE,
     jMV2c20 :: Double,
     jJVT :: Double
-    } deriving Show
+    } deriving (Show, Generic)
 
-type Jets = Vector Jet
+instance Binary Jet
+
+type Jets = [Jet]
 
 data LargeJet = LargeJet {
     ljPtEtaPhiE :: PtEtaPhiE,
     ljM :: Double,
     ljSD12 :: Double
-    } deriving Show
+    } deriving (Show, Generic)
 
-type LargeJets = Vector LargeJet
+instance Binary LargeJet
+
+type LargeJets = [LargeJet]
 
 data TrackJet = TrackJet {
     tjPtEtaPhiE :: PtEtaPhiE,
     tjMV2c20 :: Double
-    } deriving Show
+    } deriving (Show, Generic)
 
-type TrackJets = Vector TrackJet
+instance Binary TrackJet
+
+type TrackJets = [TrackJet]
