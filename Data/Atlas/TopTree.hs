@@ -3,6 +3,7 @@
 module Data.Atlas.TopTree where
 
 import Control.Applicative
+import qualified Data.Traversable as T (mapM)
 
 import Data.Text (Text, unpack)
 import Data.Aeson (Value(..), withObject, eitherDecode)
@@ -72,6 +73,9 @@ parseIdx :: FromJSON a => Text -> Int -> Value -> Parser a
 parseIdx name idx val = (! idx) `fmap` parseBranch name val
 
 
+zipWithA :: (Applicative m) => m (Vector (a -> b)) -> m (Vector a) -> m (Vector b)
+zipWithA = liftA2 (V.zipWith ($))
+
 parsePtEtaPhiE :: Text -> Int -> Value -> Parser PtEtaPhiE
 parsePtEtaPhiE prefix idx val = PtEtaPhiE <$>
                                     parseIdx (prefix <> "pt") idx val <*>
@@ -79,36 +83,44 @@ parsePtEtaPhiE prefix idx val = PtEtaPhiE <$>
                                     parseIdx (prefix <> "phi") idx val <*>
                                     parseIdx (prefix <> "e") idx val
 
-
-parseElectron :: Int -> Value -> Parser Electron
-parseElectron idx val = Electron <$>
-                            parsePtEtaPhiE "el_" idx val <*>
-                            parseIdx "el_cl_eta" idx val <*>
-                            parseIdx "el_charge" idx val <*>
-                            parseIdx "el_d0sig" idx val <*>
-                            parseIdx "el_ptvarcone20" idx val
+parsePtEtaPhiEs :: Text -> Value -> Parser PtEtaPhiEs
+parsePtEtaPhiEs prefix val = fmap PtEtaPhiE `fmap`
+                                parseBranch (prefix <> "pt") val `zipWithA`
+                                parseBranch (prefix <> "eta") val `zipWithA`
+                                parseBranch (prefix <> "phi") val `zipWithA`
+                                parseBranch (prefix <> "e") val
 
 
-parseMuon :: Int -> Value -> Parser Muon
-parseMuon idx val = Muon <$>
-                        parsePtEtaPhiE "mu_" idx val <*>
-                        parseIdx "mu_charge" idx val <*>
-                        parseIdx "mu_d0sig" idx val <*>
-                        parseIdx "mu_ptvarcone30" idx val
+parseElectrons :: Value -> Parser Electrons
+parseElectrons val = fmap Electron `fmap`
+                        parsePtEtaPhiEs "el_" val `zipWithA`
+                        parseBranch "el_cl_eta" val `zipWithA`
+                        parseBranch "el_charge" val `zipWithA`
+                        parseBranch "el_d0sig" val `zipWithA`
+                        parseBranch "el_ptvarcone20" val
 
 
-parseJet :: Int -> Value -> Parser Jet
-parseJet idx val = Jet <$>
-                    parsePtEtaPhiE "jet_" idx val <*>
-                    parseIdx "jet_mv2c20" idx val <*>
-                    parseIdx "jet_jvt" idx val
+
+parseMuons :: Value -> Parser Muons
+parseMuons val = fmap Muon `fmap`
+                    parsePtEtaPhiEs "mu_" val `zipWithA`
+                    parseBranch "mu_charge" val `zipWithA`
+                    parseBranch "mu_d0sig" val `zipWithA`
+                    parseBranch "mu_ptvarcone30" val
 
 
-parseLargeJet :: Int -> Value -> Parser LargeJet
-parseLargeJet idx val = LargeJet <$>
-                            parsePtEtaPhiE "ljet_" idx val <*>
-                            parseIdx "ljet_m" idx val <*>
-                            parseIdx "ljet_sd12" idx val
+parseJets :: Value -> Parser Jets
+parseJets val = fmap Jet `fmap`
+                    parsePtEtaPhiEs "jet_" val `zipWithA`
+                    parseBranch "jet_mv2c20" val `zipWithA`
+                    parseBranch "jet_jvt" val
+
+
+parseLargeJets :: Value -> Parser LargeJets
+parseLargeJets val = fmap LargeJet `fmap`
+                            parsePtEtaPhiEs "ljet_" val `zipWithA`
+                            parseBranch "ljet_m" val `zipWithA`
+                            parseBranch "ljet_sd12" val
 
 
 parseMET :: Value -> Parser PtEtaPhiE
@@ -120,12 +132,6 @@ parseMET val = let et = parseBranch "met_met" val in
                     et
 
 
-parseTreeVector :: Text -> (Int -> Value -> Parser a) -> Value -> Parser (Vector a)
-parseTreeVector prefix f = withObject "parseVector expects an object." $
-                    \obj -> do
-                        n <- V.length <$> (obj .: (prefix <> "pt") :: Parser (Vector Double))
-                        generateM n (flip f (Object obj))
-
 
 instance FromJSON Event where
     parseJSON v = Event <$>
@@ -134,8 +140,8 @@ instance FromJSON Event where
                     parseBranch "mcChannelNumber" v <*>
                     parseBranch "weight_mc" v <*>
                     parseBranch "mu" v <*>
-                    parseTreeVector "el_" parseElectron v <*>
-                    parseTreeVector "mu_" parseMuon v <*>
-                    parseTreeVector "jet_" parseJet v <*>
-                    parseTreeVector "ljet_" parseLargeJet v <*>
+                    parseElectrons v <*>
+                    parseMuons v <*>
+                    parseJets v <*>
+                    parseLargeJets v <*>
                     parseMET v
