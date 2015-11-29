@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric,UndecidableInstances,FlexibleInstances #-}
 
-module Data.Atlas.PtEtaPhiE where
+module Data.HEP.LorentzVector where
 
 import Data.Binary
 import GHC.Generics (Generic)

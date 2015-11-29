@@ -2,7 +2,7 @@
 
 module Data.Atlas.Muon where
 
-import Data.Atlas.PtEtaPhiE
+import Data.HEP.LorentzVector
 
 import Data.Binary
 import GHC.Generics (Generic)
@@ -15,11 +15,5 @@ data Muon = Muon {
     } deriving (Show, Generic)
 
 instance Binary Muon
-
-instance LorentzVector Muon where
-    lvPt = lvPt . mPtEtaPhiE
-    lvEta = lvEta . mPtEtaPhiE
-    lvPhi = lvPhi . mPtEtaPhiE
-    lvE = lvE . mPtEtaPhiE
 
 type Muons = [Muon]
