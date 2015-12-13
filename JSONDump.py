@@ -55,21 +55,21 @@ def vector2string(n=1):
         if not v.size():
             return "[]"
 
-        s = "["
+        ss = ["["]
         if n > 1:
-            s += vector2string(n-1)(v[0])
+            ss.append(vector2string(n-1)(v[0]))
             for x in v[1:]:
-                s += ", "
-                s += vector2string(n-1)(x)
+                ss.append(", ")
+                ss.append(vector2string(n-1)(x))
         else:
-            s += str(v[0])
+            ss.append(str(v[0]))
             for x in v[1:]:
-                s += ", "
-                s += str(x)
+                ss.append(", ")
+                ss.append(str(x))
 
-        s += "]"
+        ss.append("]")
 
-        return s
+        return "".join(ss)
 
     return f
 
