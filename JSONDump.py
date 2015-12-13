@@ -34,15 +34,15 @@ def showEvt(branches, stream):
         return "[]"
 
     stream.write(
-            "{\"%s\" : %s" % (branches[0][0], branches[0][2](branches[0][1]))
+            "[ %s" % branches[0][2](branches[0][1])
             )
 
     for (bname, bval, bprinter) in branches[1:]:
         stream.write(
-                ", \"%s\" : %s" % (bname, bprinter(bval))
+                ", %s" % bprinter(bval)
                 )
 
-    stream.write("}")
+    stream.write(" ]")
     return
 
 
