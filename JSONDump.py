@@ -48,6 +48,7 @@ def showEvt(branches, stream):
 
 def vector2string(n=1):
 
+    # this is the bottleneck function.
     def f(v):
         if n == 0:
             return str(v[0])
