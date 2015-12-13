@@ -1,4 +1,4 @@
-from sys import argv, stdout
+from sys import argv, stdout, stderr
 from array import array
 import ROOT
 from string import count
@@ -34,15 +34,15 @@ def showEvt(branches, stream):
         return "[]"
 
     stream.write(
-            "[ %s" % branches[0][2](branches[0][1])
+            "[%s" % branches[0][2](branches[0][1])
             )
 
     for (bname, bval, bprinter) in branches[1:]:
         stream.write(
-                ", %s" % bprinter(bval)
+                ",%s" % bprinter(bval)
                 )
 
-    stream.write(" ]")
+    stream.write("]")
     return
 
 
@@ -60,12 +60,12 @@ def vector2string(n=1):
         if n > 1:
             ss.append(vector2string(n-1)(v[0]))
             for x in v[1:]:
-                ss.append(", ")
+                ss.append(",")
                 ss.append(vector2string(n-1)(x))
         else:
             ss.append(str(v[0]))
             for x in v[1:]:
-                ss.append(", ")
+                ss.append(",")
                 ss.append(str(x))
 
         ss.append("]")
@@ -98,10 +98,19 @@ def JSONDump(tree, branches_on=None, stream=stdout):
                 lleaves.append(l)
     else:
         for bname in branches_on:
-            lleaves.append(tree.GetLeaf(bname))
+            l = tree.GetLeaf(bname)
+            if not l:
+                stderr.write("cannot find branch %s\n" % bname)
+                stderr.write("exiting\n")
+                exit(-1)
+
+            else:
+                lleaves.append(tree.GetLeaf(bname))
+                continue
 
     tree.SetBranchStatus("*", 0)
-    map(lambda l: tree.SetBranchStatus(l.GetName(), 1), lleaves)
+    for l in lleaves:
+        tree.SetBranchStatus(l.GetName(), 1)
 
     lbranches = []
     for l in lleaves[:-1]:
@@ -133,7 +142,7 @@ def JSONDump(tree, branches_on=None, stream=stdout):
     stream.write('\t"events" : [\n')
 
     if not nentries:
-        stream.write('\t]}')
+        stream.write(']}')
         return
 
     tree.GetEntry(0)
@@ -152,4 +161,17 @@ if __name__ == "__main__":
     fin = ROOT.TFile(argv[1])
     tin = fin.Get(argv[2])
 
-    JSONDump(tin)
+    if len(argv) > 3:
+        fbs = open(argv[3], 'r')
+        branches = fbs.readlines()
+        branches_on = []
+        for b in branches:
+            b = b.strip()
+            if b and not b.startswith("#"):
+                branches_on.append(b)
+            else:
+                continue
+    else:
+        branches = None
+
+    JSONDump(tin, branches_on=branches_on)
