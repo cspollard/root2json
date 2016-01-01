@@ -87,7 +87,7 @@ def get_type_obj(classname):
         return array(darrconv[classname], [0])
 
 
-def JSONDump(tree, branches_on=None, stream=stdout):
+def JSONDumpTree(tree, branches_on=None, stream=stdout):
 
     stream.write('{\n\t"branches" : [\n')
 
@@ -174,4 +174,4 @@ if __name__ == "__main__":
     else:
         branches = None
 
-    JSONDump(tin, branches_on=branches_on)
+    JSONDumpTree(tin, branches_on=branches_on)

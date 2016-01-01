@@ -1,4 +1,6 @@
 TODOs
 
-- write multiple trees (json config for branches?)
+- write multiple trees
 - write TH1, TH2s?
+- write TDirectories (and TFiles)
+- json config file
