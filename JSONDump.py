@@ -163,9 +163,9 @@ if __name__ == "__main__":
 
     stdout.write("{\n")
     for s in treesBranches:
-        tin, b = s.split(":", 1)
-        if b != "":
-            fbs = open(b, 'r')
+        if ":" in s:
+            tin, bf = s.split(":", 1)
+            fbs = open(bf, 'r')
             branches = fbs.readlines()
             branches_on = []
             for b in branches:
@@ -176,9 +176,11 @@ if __name__ == "__main__":
                     continue
             fbs.close()
         else:
+            tin = s
             branches_on = None
 
         stdout.write("%s : " % tin.GetName())
         JSONDumpTree(tin, branches_on=branches_on)
 
     stdout.write("\n}")
+    fin.Close()
