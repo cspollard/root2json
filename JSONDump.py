@@ -159,19 +159,26 @@ def JSONDumpTree(tree, branches_on=None, stream=stdout):
 
 if __name__ == "__main__":
     fin = ROOT.TFile(argv[1])
-    tin = fin.Get(argv[2])
+    treesBranches = argv[2:]
 
-    if len(argv) > 3:
-        fbs = open(argv[3], 'r')
-        branches = fbs.readlines()
-        branches_on = []
-        for b in branches:
-            b = b.strip()
-            if b and not b.startswith("#"):
-                branches_on.append(b)
-            else:
-                continue
-    else:
-        branches = None
+    stdout.write("{\n")
+    for s in treesBranches:
+        tin, b = s.split(":", 1)
+        if b != "":
+            fbs = open(b, 'r')
+            branches = fbs.readlines()
+            branches_on = []
+            for b in branches:
+                b = b.strip()
+                if b and not b.startswith("#"):
+                    branches_on.append(b)
+                else:
+                    continue
+            fbs.close()
+        else:
+            branches_on = None
 
-    JSONDumpTree(tin, branches_on=branches_on)
+        stdout.write("%s : " % tin.GetName())
+        JSONDumpTree(tin, branches_on=branches_on)
+
+    stdout.write("\n}")
