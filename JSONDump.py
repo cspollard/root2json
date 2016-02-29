@@ -179,7 +179,7 @@ if __name__ == "__main__":
             tin = s
             branches_on = None
 
-        stdout.write("%s : " % tin.GetName())
+        stdout.write('"%s" : ' % tin.GetName())
         JSONDumpTree(tin, branches_on=branches_on)
 
     stdout.write("\n}")
