@@ -2,6 +2,7 @@ from sys import argv, stdout, stderr
 from array import array
 import ROOT
 from string import count
+from math import isnan
 
 
 drootconv = {
@@ -45,28 +46,34 @@ def showEvt(branches, stream):
     stream.write("]")
     return
 
+def showObj(x, isChar=False):
+    if isChar:
+        return str(ord(x))
+    if isnan(x):
+        return '"NaN"'
+    return str(x)
 
-def vector2string(n=1):
+def vector2string(n=1, isChar=False):
 
     # this is the bottleneck function.
     def f(v):
         if n == 0:
-            return str(v[0])
+            return showObj(v[0], isChar=isChar)
 
         if not v.size():
             return "[]"
 
         ss = ["["]
         if n > 1:
-            ss.append(vector2string(n-1)(v[0]))
+            ss.append(vector2string(n-1, isChar)(v[0]))
             for x in v[1:]:
                 ss.append(",")
-                ss.append(vector2string(n-1)(x))
+                ss.append(vector2string(n-1, isChar)(x))
         else:
-            ss.append(str(v[0]))
+            ss.append(showObj(v[0], isChar=isChar))
             for x in v[1:]:
                 ss.append(",")
-                ss.append(str(x))
+                ss.append(showObj(x, isChar=isChar))
 
         ss.append("]")
 
@@ -84,7 +91,11 @@ def get_type_obj(classname):
     if "vector" in classname:
         return ROOT.std.vector(classname.replace("vector", "", 1).strip(" <").rstrip(" >"))()
     else:
-        return array(darrconv[classname], [0])
+        if classname == "char":
+            c = "0"
+        else:
+            c = [0]
+        return array(darrconv[classname], c)
 
 
 def JSONDumpTree(tree, branches_on=None, stream=stdout):
@@ -120,7 +131,8 @@ def JSONDumpTree(tree, branches_on=None, stream=stdout):
         stream.write('\t\t["%s", "%s"],\n' % (lname, lclass))
 
         type_obj = get_type_obj(lclass)
-        printer_obj = vector2string(count(lclass, "vector"))
+        printer_obj = vector2string(count(lclass, "vector"),
+                isChar=("char" in lclass or "Char" in lclass))
         lbranches.append((lname, type_obj, printer_obj))
 
         tree.SetBranchAddress(lname, type_obj)
@@ -136,7 +148,6 @@ def JSONDumpTree(tree, branches_on=None, stream=stdout):
     lbranches.append((lname, type_obj, printer_obj))
 
     tree.SetBranchAddress(lname, type_obj)
-
 
     nentries = tree.GetEntries()
     stream.write('\t"events" : [\n')
@@ -162,7 +173,10 @@ if __name__ == "__main__":
     treesBranches = argv[2:]
 
     stdout.write("{\n")
-    for s in treesBranches:
+    for (i, s) in enumerate(treesBranches):
+        if i > 0:
+            stdout.write(",\n")
+
         if ":" in s:
             tn, bf = s.split(":", 1)
             fbs = open(bf, 'r')
@@ -182,7 +196,6 @@ if __name__ == "__main__":
         tin = fin.Get(tn)
         stdout.write('"%s" : ' % tin.GetName())
         JSONDumpTree(tin, branches_on=branches_on)
-        stdout.write("\n")
 
     stdout.write("\n}")
     fin.Close()
