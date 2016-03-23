@@ -49,7 +49,7 @@ def showEvt(branches, stream):
 def showObj(x, isChar=False):
     if isChar:
         return str(ord(x))
-    if isnan(x):
+    if type(x) == float and isnan(x):
         return '"NaN"'
     return str(x)
 
@@ -65,10 +65,10 @@ def vector2string(n=1, isChar=False):
 
         ss = ["["]
         if n > 1:
-            ss.append(vector2string(n-1, isChar)(v[0]))
+            ss.append(vector2string(n-1, isChar=isChar)(v[0]))
             for x in v[1:]:
                 ss.append(",")
-                ss.append(vector2string(n-1, isChar)(x))
+                ss.append(vector2string(n-1, isChar=isChar)(x))
         else:
             ss.append(showObj(v[0], isChar=isChar))
             for x in v[1:]:
@@ -111,9 +111,8 @@ def JSONDumpTree(tree, branches_on=None, stream=stdout):
         for bname in branches_on:
             l = tree.GetLeaf(bname)
             if not l:
-                stderr.write("cannot find branch %s\n" % bname)
-                stderr.write("exiting\n")
-                exit(-1)
+                stderr.write("cannot find branch %s!!\n" % bname)
+                continue
 
             else:
                 lleaves.append(tree.GetLeaf(bname))
@@ -144,7 +143,8 @@ def JSONDumpTree(tree, branches_on=None, stream=stdout):
     stream.write('\t\t["%s", "%s"]\n\t],\n' % (lname, lclass))
 
     type_obj = get_type_obj(lclass)
-    printer_obj = vector2string(count(lclass, "vector"))
+    printer_obj = vector2string(count(lclass, "vector"),
+            isChar=("char" in lclass or "Char" in lclass))
     lbranches.append((lname, type_obj, printer_obj))
 
     tree.SetBranchAddress(lname, type_obj)
